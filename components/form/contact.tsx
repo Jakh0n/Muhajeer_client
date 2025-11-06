@@ -35,8 +35,18 @@ function ContactForm() {
 
 	function onSubmit(values: z.infer<typeof contactSchema>) {
 		setIsLoading(true)
-		const telegramBotId = process.env.NEXT_PUBLIC_TETELGRAM_BOT_API!
-		const telegramChatId = process.env.NEXT_PUBLIC_TETELGRAM_CHAT_ID!
+		const telegramBotId = process.env.NEXT_PUBLIC_TELEGRAM_BOT_API
+		const telegramChatId = process.env.NEXT_PUBLIC_TELEGRAM_CHAT_ID
+
+		if (!telegramBotId || !telegramChatId) {
+			toast({
+				description:
+					'Telegram configuration is missing. Please contact support.',
+				variant: 'destructive',
+			})
+			setIsLoading(false)
+			return
+		}
 
 		fetch(`https://api.telegram.org/bot${telegramBotId}/sendMessage`, {
 			method: 'POST',
