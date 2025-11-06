@@ -47,18 +47,27 @@ const SignUpPage = () => {
 
 	async function onSubmit(values: z.infer<typeof registerSchema>) {
 		setIsLoading(true)
-		const res = await sendOtp({ email: values.email })
-		if (res?.serverError || res?.validationErrors || !res?.data) {
-			return onError('Xatolik yuz berdi')
-		}
-		if (res.data.failure) {
-			return onError(res.data.failure)
-		}
-		if (res.data.status === 200) {
-			toast({ description: 'OTP yuborildi' })
-			setIsVerifying(true)
-			setIsLoading(false)
-			setIsResend(false)
+		try {
+			const res = await sendOtp({ email: values.email })
+			if (res?.serverError || res?.validationErrors || !res?.data) {
+				onError('Xatolik yuz berdi')
+				return
+			}
+			if (res.data.failure) {
+				onError(res.data.failure)
+				return
+			}
+			if (res.data.status === 200) {
+				toast({ description: 'OTP yuborildi' })
+				setIsVerifying(true)
+				setIsLoading(false)
+				setIsResend(false)
+			} else {
+				onError("Noma'lum xatolik yuz berdi")
+			}
+		} catch (error) {
+			console.error('Sign up error:', error)
+			onError("Serverga ulanib bo'lmadi. Iltimos, qayta urinib ko'ring.")
 		}
 	}
 
