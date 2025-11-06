@@ -49,25 +49,67 @@ const SignUpPage = () => {
 		setIsLoading(true)
 		try {
 			const res = await sendOtp({ email: values.email })
-			if (res?.serverError || res?.validationErrors || !res?.data) {
-				onError('Xatolik yuz berdi')
+
+			// Check for server errors first
+			if (res?.serverError) {
+				console.error('Server error:', res.serverError)
+				onError("Server xatosi. Iltimos, qayta urinib ko'ring.")
 				return
 			}
+
+			// Check for validation errors
+			if (res?.validationErrors) {
+				console.error('Validation errors:', res.validationErrors)
+				onError("Ma'lumotlar noto'g'ri. Iltimos, tekshiring.")
+				return
+			}
+
+			// Check if response data exists
+			if (!res?.data) {
+				console.error('No data in response:', res)
+				onError("Server javob bermadi. Iltimos, qayta urinib ko'ring.")
+				return
+			}
+
+			// Check for failure message
 			if (res.data.failure) {
 				onError(res.data.failure)
 				return
 			}
+
+			// Check for success
 			if (res.data.status === 200) {
 				toast({ description: 'OTP yuborildi' })
 				setIsVerifying(true)
 				setIsLoading(false)
 				setIsResend(false)
 			} else {
+				console.error('Unexpected status:', res.data.status)
 				onError("Noma'lum xatolik yuz berdi")
 			}
 		} catch (error) {
 			console.error('Sign up error:', error)
-			onError("Serverga ulanib bo'lmadi. Iltimos, qayta urinib ko'ring.")
+			const errorMessage =
+				error instanceof Error ? error.message : 'Unknown error'
+
+			// Check for timeout or network errors
+			if (
+				errorMessage.includes('timeout') ||
+				errorMessage.includes('ECONNABORTED')
+			) {
+				onError(
+					"Server javob bermadi. Vaqt tugadi. Iltimos, qayta urinib ko'ring."
+				)
+			} else if (
+				errorMessage.includes('Network') ||
+				errorMessage.includes('ERR_NETWORK')
+			) {
+				onError(
+					"Internetga ulanib bo'lmadi. Iltimos, internet aloqasini tekshiring."
+				)
+			} else {
+				onError("Serverga ulanib bo'lmadi. Iltimos, qayta urinib ko'ring.")
+			}
 		}
 	}
 

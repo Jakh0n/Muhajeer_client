@@ -6,4 +6,5 @@ export const SERVER_URL =
 export const axiosClient = axios.create({
 	baseURL: SERVER_URL,
 	withCredentials: true,
+	timeout: 30000, // 30 seconds timeout to prevent hanging
 })
